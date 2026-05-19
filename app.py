@@ -1,6 +1,6 @@
 """
 app.py
-Streamlit dashboard for InvestIQ
+Optimized Streamlit dashboard for InvestIQ
 """
 
 import warnings
@@ -13,6 +13,8 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 
+import joblib
+
 # Local modules
 from data_fetch import (
     fetch_stock_data,
@@ -23,7 +25,6 @@ from data_fetch import (
 from indicators import add_indicators
 
 from model import (
-    train_model,
     predict,
     get_model_metrics
 )
@@ -47,6 +48,33 @@ st.set_page_config(
     page_icon="📈",
     layout="wide"
 )
+
+# ---------------------------------------------------
+# CUSTOM CSS
+# ---------------------------------------------------
+
+st.markdown("""
+<style>
+.block-container {
+    padding-top: 1rem;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------------------------------------------
+# LOAD PRETRAINED MODEL
+# ---------------------------------------------------
+
+@st.cache_resource
+def load_model():
+
+    model = joblib.load("xgb_model.pkl")
+    scaler = joblib.load("scaler.pkl")
+
+    return model, scaler
+
+
+model, scaler = load_model()
 
 # ---------------------------------------------------
 # SIDEBAR
@@ -150,19 +178,12 @@ with st.spinner(
     )
 
 # ---------------------------------------------------
-# MODEL
+# PREDICTION
 # ---------------------------------------------------
 
 with st.spinner(
-    "Training prediction model..."
+    "Running prediction engine..."
 ):
-
-    (
-        model,
-        scaler,
-        acc,
-        feature_cols
-    ) = train_model(enriched_df)
 
     pred_result = predict(
         model,
@@ -288,7 +309,10 @@ with col_chart:
 
     plt.tight_layout()
 
-    st.pyplot(fig_price)
+    st.pyplot(
+        fig_price,
+        clear_figure=True
+    )
 
     plt.close(fig_price)
 
@@ -417,7 +441,10 @@ with col_shap1:
         shap_result["shap_values"]
     )
 
-    st.pyplot(fig_bar)
+    st.pyplot(
+        fig_bar,
+        clear_figure=True
+    )
 
     plt.close(fig_bar)
 
@@ -431,7 +458,10 @@ with col_shap2:
         shap_result
     )
 
-    st.pyplot(fig_local)
+    st.pyplot(
+        fig_local,
+        clear_figure=True
+    )
 
     plt.close(fig_local)
 
