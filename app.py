@@ -564,5 +564,4 @@ st.markdown("---")
 st.caption(
     "InvestIQ — AI Investment "
     "Decision Support Prototype "
-    "| Final Year Project"
 )
